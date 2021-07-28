@@ -9,14 +9,16 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 
 public class WebApplication implements WebApplicationInitializer {
+//public class WebApplication {
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.setServletContext(servletContext);
         context.register(WebConfig.class);
         context.refresh();
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
         ServletRegistration.Dynamic app = servletContext.addServlet("app", dispatcherServlet);
-        app.addMapping("/app/*");
+//        app.addMapping("/app/*");
     }
 }
