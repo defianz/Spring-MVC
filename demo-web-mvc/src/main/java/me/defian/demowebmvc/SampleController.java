@@ -8,13 +8,19 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import javax.websocket.Session;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Controller
+@SessionAttributes("event")
 //@RequestMapping(value="/hello",method = RequestMethod.GET)
 public class SampleController {
 
@@ -41,47 +47,68 @@ public class SampleController {
 //                return event;
 //        }
 
-        @PostMapping("/events")
+        @PostMapping("/events/form/name")
 //        @ResponseBody
 //        public Event getEvent(@RequestParam(value = "name", required = true, defaultValue = "defian") String name){
 //        public Event getEvent(@Validated({Event.ValidateLimit.class}) @ModelAttribute Event event, BindingResult bindingResult){
-        public String getEvent(@Validated @ModelAttribute Event event, BindingResult bindingResult, Model model){
+        public String getEvent(@Validated @ModelAttribute Event event, BindingResult bindingResult, Model model
+        , SessionStatus sessionStatus){
                 if(bindingResult.hasErrors()){
                         System.out.println("=====================");
                         bindingResult.getAllErrors().forEach(c -> {
                                 System.out.println(c.toString());
                         });
-                        return "/events/form";
+                        return "/events/form-name";
                 }
-                List<Event> eventList = new ArrayList<>();
-                eventList.add(event);
-                model.addAttribute("eventList",eventList);
+//                List<Event> eventList = new ArrayList<>();
+//                eventList.add(event);
+//                model.addAttribute("eventList",eventList);
+//                sessionStatus.setComplete();
+                return "redirect:/events/form/limit";
+        }
 
+        @PostMapping("/events/form/limit")
+        public String eventsFormLimitSubmit(@Validated @ModelAttribute Event event, BindingResult bindingResult
+        , SessionStatus sessionStatus, Model model, RedirectAttributes redirectAttributes){
+                if(bindingResult.hasErrors()){
+                        return "/events/form-limit";
+                }
+//                redirectAttributes.addAttribute("name",event.getName());
+//                redirectAttributes.addAttribute("limit",event.getLimit());
+                redirectAttributes.addFlashAttribute("newEvent",event);
                 return "redirect:/events/list";
         }
 
         @GetMapping("/events/list")
-        public String getEvents(Model model){
-                Event event = new Event();
-                event.setName("defian-refresh");
-                event.setLimit(100);
+        public String getEvents(
+//                @ModelAttribute("newEvent") Event newEvent,
+                Model model, HttpSession httpSession, SessionStatus sessionStatus, @SessionAttribute("visitTime") LocalDateTime visitTime){
+//                Event event = new Event();
+//                event.setName("defian-refresh");
+//                event.setLimit(100);
+                System.out.println("visitTime = " + visitTime);
                 List<Event> eventList = new ArrayList<>();
-                eventList.add(event);
+                eventList.add((Event) model.asMap().get("newEvent"));
                 model.addAttribute("eventList",eventList);
+                sessionStatus.setComplete();
 
                 return "/events/list";
         }
 
-        @GetMapping("/events/form")
-        public String eventsForm(Model model){
-                Event event = new Event();
-                event.setName("defian");
-                event.setLimit(10);
+        @GetMapping("/events/form/name")
+        public String eventsForm(Model model, HttpSession httpSession){
 
-                model.addAttribute("event",event);
-                return "events/form";
+                model.addAttribute("event",new Event());
+//                httpSession.setAttribute("event",event);
+                return "events/form-name";
         }
 
+        @GetMapping("/events/form/limit")
+        public String eventsFormLimit(@ModelAttribute Event event, Model model){
 
+                model.addAttribute("event",event);
+//                httpSession.setAttribute("event",event);
+                return "events/form-limit";
+        }
 
 }
