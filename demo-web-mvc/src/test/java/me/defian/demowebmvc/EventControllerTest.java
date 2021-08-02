@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -20,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest
-class SampleControllerTest {
+class EventControllerTest {
 
 
     @Autowired
@@ -97,5 +98,20 @@ class SampleControllerTest {
         ModelAndView mav = result.andReturn().getModelAndView();
         Map<String,Object> model = mav.getModel();
         System.out.println(model.size());
+    }
+
+    @Test
+    public void getEvents() throws Exception {
+        Event event = new Event();
+        event.setName("defian");
+        event.setLimit(4);
+
+        mockMvc.perform(get("/events/list")
+                    .sessionAttr("visitTime", LocalDateTime.now())
+                   .flashAttr("newEvent",event)
+                    )
+                .andDo(print())
+                .andExpect(model().attributeExists("categories"))
+                .andExpect(xpath("//p").nodeCount(1));
     }
 }

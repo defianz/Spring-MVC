@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -22,7 +23,7 @@ import java.util.Map;
 @Controller
 @SessionAttributes("event")
 //@RequestMapping(value="/hello",method = RequestMethod.GET)
-public class SampleController {
+public class EventController {
 
 //    @GetMapping( {"/{name:[a-z]+}"})
 //    @RequestMapping(
@@ -47,12 +48,38 @@ public class SampleController {
 //                return event;
 //        }
 
+        @ExceptionHandler
+        public String eventErrorHandler(EventException eventException, Model model){
+                model.addAttribute("message","event error");
+                return "error";
+        }
+
+        @InitBinder("Event")
+        public void initEventBinder(WebDataBinder webDataBinder){
+                // 아이디 필드를 데이터바인딩시 받지 않음
+                webDataBinder.setDisallowedFields("id");
+                // 유효값 검증을 위한 커스터마이징 validator 설정
+                webDataBinder.addValidators(new EventValidator());
+        }
+
+        @ModelAttribute
+        public void categories(Model model){
+                model.addAttribute("categories", List.of("study","seminar","hobby","conference"));
+        }
+//
+//        @ModelAttribute("categories")
+//        public List<String> categories(Model model){
+//               return List.of("study","seminar","hobby","conference");
+//        }
+
         @PostMapping("/events/form/name")
 //        @ResponseBody
 //        public Event getEvent(@RequestParam(value = "name", required = true, defaultValue = "defian") String name){
 //        public Event getEvent(@Validated({Event.ValidateLimit.class}) @ModelAttribute Event event, BindingResult bindingResult){
         public String getEvent(@Validated @ModelAttribute Event event, BindingResult bindingResult, Model model
         , SessionStatus sessionStatus){
+
+
                 if(bindingResult.hasErrors()){
                         System.out.println("=====================");
                         bindingResult.getAllErrors().forEach(c -> {
@@ -97,10 +124,10 @@ public class SampleController {
 
         @GetMapping("/events/form/name")
         public String eventsForm(Model model, HttpSession httpSession){
-
-                model.addAttribute("event",new Event());
+                throw new EventException();
+//                model.addAttribute("event",new Event());
 //                httpSession.setAttribute("event",event);
-                return "events/form-name";
+//                return "events/form-name";
         }
 
         @GetMapping("/events/form/limit")

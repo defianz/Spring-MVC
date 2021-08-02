@@ -1,8 +1,11 @@
 package me.defian.demowebmvc;
 
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDate;
 
 public class Event {
 
@@ -16,6 +19,18 @@ public class Event {
     private String name;
 
 //    @Min(value = 0, groups = ValidateLimit.class)
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate startDate;
+
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
 
     @Min(1)
     private Integer limit;
